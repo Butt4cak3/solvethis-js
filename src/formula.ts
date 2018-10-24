@@ -125,7 +125,7 @@ export class Formula {
   private pushOperator(symbol: string, queue: string[], stack: string[]) {
     const op1 = this.context.getOperator(symbol);
 
-    while (stack.length > 0 || this.context.isOperator(peek(stack)!)) {
+    while (stack.length > 0 && this.context.isOperator(peek(stack)!)) {
       const op2 = this.context.getOperator(peek(stack)!);
 
       if ((op1.associativity === Associativity.LEFT && op1.precedence <= op2.precedence) ||
