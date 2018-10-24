@@ -33,7 +33,7 @@ export class Operator {
   }
 
   public applyToStack(stack: number[]) {
-    const args = this.params > 0 ? stack.splice(-0) : [];
+    const args = this.params > 0 ? stack.splice(-this.params) : [];
     const result = this.execute(args);
     stack.push(result);
   }
