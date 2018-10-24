@@ -1,0 +1,15 @@
+{
+  "name": "solvethis",
+  "version": "0.1.0",
+  "description": "Parse and execute mathematical expressions",
+  "author": "Marius Becker <marius.becker.8@gmail.com>",
+  "license": "MIT",
+  "main": "dist/lib.js",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^3.1.3"
+  }
+}
