@@ -4,6 +4,11 @@
   "description": "Parse and execute mathematical expressions",
   "author": "Marius Becker <marius.becker.8@gmail.com>",
   "license": "MIT",
+  "issues": "https://github.com/butt4cak3/solvethis-js/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/butt4cak3/solvethis-js.git"
+  },
   "main": "dist/lib.js",
   "types": "dist/types/lib.d.ts",
   "scripts": {
