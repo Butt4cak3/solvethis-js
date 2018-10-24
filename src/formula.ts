@@ -87,6 +87,11 @@ export class Formula {
     this.queue = queue;
   }
 
+  public static execute(expression: string, tempVars: Dict<number> = Object.create(null), context = Context.default) {
+    const formula = new Formula(expression, context);
+    return formula.execute(tempVars);
+  }
+
   public execute(tempVars: Dict<number> = Object.create(null)) {
     const vars: Dict<number> = Object.create(null);
     const stack: number[] = [];
