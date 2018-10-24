@@ -5,6 +5,7 @@
   "author": "Marius Becker <marius.becker.8@gmail.com>",
   "license": "MIT",
   "main": "dist/lib.js",
+  "types": "dist/types/lib.d.ts",
   "scripts": {
     "build": "tsc",
     "prepare": "tsc"
