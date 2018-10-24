@@ -4,7 +4,7 @@ import { Associativity } from "./operator";
 import { Dict } from "./collections";
 
 function isNumeric(str: string) {
-  const re = /^\d+(\.\d+)?$/;
+  const re = /^-?\d+(\.\d+)?$/;
   return re.test(str);
 }
 
@@ -44,7 +44,13 @@ export class Formula {
 
     for (const token of tokens) {
       if (isNumeric(token)) {
-        queue.push(token);
+        const num = parseFloat(token);
+        if (num < 0 && prevToken != null && !this.context.isOperator(prevToken)) {
+          queue.push(token.slice(1));
+          this.pushOperator("-", queue, stack);
+        } else {
+          queue.push(token);
+        }
       } else if (this.context.isFunction(token)) {
         stack.push(token);
       } else if (isIdentifier(token)) {
@@ -52,7 +58,7 @@ export class Formula {
       } else if (this.context.isOperator(token)) {
         this.pushOperator(token, queue, stack);
       } else if (token === "(") {
-        if (prevToken && !this.context.isOperator(prevToken) && !this.context.isFunction(prevToken)) {
+        if (prevToken != null && !this.context.isOperator(prevToken) && !this.context.isFunction(prevToken)) {
           stack.push("*");
         }
 
