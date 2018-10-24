@@ -1,17 +1,7 @@
 import { Context } from "./context";
-import { Tokenizer } from "./tokenizer";
+import { Tokenizer, Token, TokenType } from "./tokenizer";
 import { Associativity } from "./operator";
 import { Dict } from "./collections";
-
-function isNumeric(str: string) {
-  const re = /^-?\d+(\.\d+)?$/;
-  return re.test(str);
-}
-
-function isIdentifier(str: string) {
-  const re = /^[a-z][a-z0-9_]*$/i;
-  return re.test(str);
-}
 
 function peek<T>(arr: T[]) {
   if (arr.length > 0) {
@@ -23,7 +13,7 @@ function peek<T>(arr: T[]) {
 
 export class Formula {
   public readonly context: Context;
-  private queue: string[];
+  private queue: Token[];
 
   public constructor(expression?: string, context?: Context) {
     this.context = context || Context.default;
@@ -37,36 +27,39 @@ export class Formula {
 
   public parse(expression: string) {
     const tokens = Tokenizer.parse(expression);
-    const queue: string[] = [];
-    const stack: string[] = [];
+    const queue: Token[] = [];
+    const stack: Token[] = [];
 
-    let prevToken: string | undefined;
+    let prevToken: Token | undefined;
 
     for (const token of tokens) {
-      if (isNumeric(token)) {
-        const num = parseFloat(token);
-        if (num < 0 && prevToken != null && !this.context.isOperator(prevToken)) {
-          queue.push(token.slice(1));
-          this.pushOperator("-", queue, stack);
+      if (token.type === TokenType.NUMBER) {
+        const num = parseFloat(token.text);
+
+        if (num < 0 && prevToken != null && prevToken.type !== TokenType.OPERATOR) {
+          queue.push({ type: token.type, text: token.text.slice(1) });
+          this.pushOperator({ type: TokenType.OPERATOR, text: "-" }, queue, stack);
         } else {
           queue.push(token);
         }
-      } else if (this.context.isFunction(token)) {
-        stack.push(token);
-      } else if (isIdentifier(token)) {
-        queue.push(token);
-      } else if (this.context.isOperator(token)) {
+      } else if (token.type === TokenType.IDENTIFIER) {
+        if (this.context.isFunction(token.text)) {
+          stack.push(token);
+        } else {
+          queue.push(token);
+        }
+      } else if (token.type === TokenType.OPERATOR && this.context.isOperator(token.text)) {
         this.pushOperator(token, queue, stack);
-      } else if (token === "(") {
-        if (prevToken != null && !this.context.isOperator(prevToken) && !this.context.isFunction(prevToken)) {
-          stack.push("*");
+      } else if (token.type === TokenType.PLEFT) {
+        if (prevToken != null && prevToken.type !== TokenType.OPERATOR && !this.context.isFunction(prevToken.text)) {
+          stack.push({ type: TokenType.OPERATOR, text: "*" });
         }
 
         stack.push(token);
-      } else if (token === ")") {
+      } else if (token.type === TokenType.PRIGHT) {
         this.popOperators(queue, stack);
-      } else if (token === ",") {
-        while (stack.length > 0 && peek(stack) !== "(") {
+      } else if (token.type === TokenType.PARAM_SEPARATOR) {
+        while (stack.length > 0 && peek(stack)!.type !== TokenType.PLEFT) {
           queue.push(stack.pop()!);
         }
 
@@ -74,7 +67,7 @@ export class Formula {
           throw new Error("Mismatched parentheses");
         }
       } else {
-        throw new Error(`Unknown token "${token}"`);
+        throw new Error(`Unknown token "${token.text}"`);
       }
 
       prevToken = token;
@@ -83,7 +76,7 @@ export class Formula {
     while (stack.length > 0) {
       const token = stack.pop()!;
 
-      if (token === "(" || token === ")") {
+      if (token.type === TokenType.PLEFT || token.type === TokenType.PRIGHT) {
         throw new Error("Mismatched parentheses");
       }
 
@@ -107,22 +100,24 @@ export class Formula {
     }
 
     for (const origToken of this.queue) {
-      const token = origToken.toLowerCase();
+      const token = { type: origToken.type, text: origToken.text.toLowerCase() };
 
-      if (isNumeric(token)) {
-        stack.push(parseFloat(token));
-      } else if (token in vars) {
-        stack.push(vars[token]);
-      } else if (this.context.isVar(token)) {
-        stack.push(this.context.getVar(token));
-      } else if (this.context.isFunction(token)) {
-        const func = this.context.getFunction(token);
-        func.applyToStack(stack);
-      } else if (this.context.isOperator(token)) {
-        const operator = this.context.getOperator(token);
+      if (token.type === TokenType.NUMBER) {
+        stack.push(parseFloat(token.text));
+      } else if (token.type === TokenType.IDENTIFIER) {
+        if (token.text in vars) {
+          stack.push(vars[token.text]);
+        } else if (this.context.isVar(token.text)) {
+          stack.push(this.context.getVar(token.text));
+        } else if (this.context.isFunction(token.text)) {
+          const func = this.context.getFunction(token.text);
+          func.applyToStack(stack);
+        }
+      } else if (token.type === TokenType.OPERATOR && this.context.isOperator(token.text)) {
+        const operator = this.context.getOperator(token.text);
         operator.applyToStack(stack);
       } else {
-        throw new Error(`Unknown token ${origToken}`);
+        throw new Error(`Unknown token ${origToken.text}`);
       }
     }
 
@@ -133,11 +128,11 @@ export class Formula {
     return stack[0];
   }
 
-  private pushOperator(symbol: string, queue: string[], stack: string[]) {
-    const op1 = this.context.getOperator(symbol);
+  private pushOperator(token: Token, queue: Token[], stack: Token[]) {
+    const op1 = this.context.getOperator(token.text);
 
-    while (stack.length > 0 && this.context.isOperator(peek(stack)!)) {
-      const op2 = this.context.getOperator(peek(stack)!);
+    while (stack.length > 0 && this.context.isOperator(peek(stack)!.text)) {
+      const op2 = this.context.getOperator(peek(stack)!.text);
 
       if ((op1.associativity === Associativity.LEFT && op1.precedence <= op2.precedence) ||
           (op1.associativity === Associativity.RIGHT && op1.precedence < op2.precedence)) {
@@ -147,11 +142,11 @@ export class Formula {
       }
     }
 
-    stack.push(symbol);
+    stack.push(token);
   }
 
-  private popOperators(queue: string[], stack: string[]) {
-    while (stack.length > 0 && peek(stack) !== "(") {
+  private popOperators(queue: Token[], stack: Token[]) {
+    while (stack.length > 0 && peek(stack)!.type !== TokenType.PLEFT) {
       queue.push(stack.pop()!);
     }
 
@@ -161,7 +156,7 @@ export class Formula {
 
     stack.pop();
 
-    if (stack.length > 0 && this.context.isFunction(peek(stack)!)) {
+    if (stack.length > 0 && this.context.isFunction(peek(stack)!.text)) {
       queue.push(stack.pop()!);
     }
   }
