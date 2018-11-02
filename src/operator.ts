@@ -1,10 +1,8 @@
-interface OperatorCallback {
-  (args: number[]): number;
-}
+type OperatorCallback = (args: number[]) => number;
 
 export enum Associativity {
   LEFT,
-  RIGHT
+  RIGHT,
 }
 
 export class Operator {
@@ -19,7 +17,7 @@ export class Operator {
     params: number,
     associativity: Associativity,
     precedence: number,
-    handler: OperatorCallback
+    handler: OperatorCallback,
   ) {
     this.symbol = symbol;
     this.params = params;

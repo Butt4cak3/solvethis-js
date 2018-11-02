@@ -1,13 +1,8 @@
-import { Func } from "./func";
-import { Operator, Associativity } from "./operator";
 import { Dict } from "./collections";
+import { Func } from "./func";
+import { Associativity, Operator } from "./operator";
 
 export class Context {
-  private functions: Dict<Func>;
-  private operators: Dict<Operator>;
-  private vars: Dict<number>;
-
-  private static _default: Context = new Context();
 
   public static get default() {
     const context = Context._default;
@@ -32,6 +27,11 @@ export class Context {
 
     return context;
   }
+
+  private static _default: Context = new Context();
+  private functions: Dict<Func>;
+  private operators: Dict<Operator>;
+  private vars: Dict<number>;
 
   public constructor() {
     this.functions = Object.create(null);

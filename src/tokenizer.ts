@@ -20,7 +20,7 @@ export enum TokenType {
   OPERATOR = "Operator",
   PARAM_SEPARATOR = "ParamSeparator",
   PLEFT = "PLeft",
-  PRIGHT = "PRight"
+  PRIGHT = "PRight",
 }
 
 export interface Token {
@@ -29,7 +29,6 @@ export interface Token {
 }
 
 export class Tokenizer {
-  private static parser = new Grammars.W3C.Parser(grammar, null);
 
   public static parse(str: string) {
     const tree = this.parser.getAST(str);
@@ -41,12 +40,13 @@ export class Tokenizer {
 
     return queue;
   }
+  private static parser = new Grammars.W3C.Parser(grammar, null);
 
   private static filter(node: IToken, queue: Token[]) {
     if (Object.values(TokenType).indexOf(node.type) !== -1) {
       queue.push({
+        text: node.text,
         type: node.type as TokenType,
-        text: node.text
       });
     } else {
       for (const child of node.children) {

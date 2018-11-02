@@ -1,6 +1,4 @@
-interface FunctionCallback {
-  (args: number[]): number;
-}
+type FunctionCallback = (args: number[]) => number;
 
 export class Func {
   public readonly name: string;

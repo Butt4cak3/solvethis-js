@@ -1,7 +1,7 @@
-import { Context } from "./context";
-import { Tokenizer, Token, TokenType } from "./tokenizer";
-import { Associativity } from "./operator";
 import { Dict } from "./collections";
+import { Context } from "./context";
+import { Associativity } from "./operator";
+import { Token, Tokenizer, TokenType } from "./tokenizer";
 
 function peek<T>(arr: T[]) {
   if (arr.length > 0) {
@@ -12,6 +12,11 @@ function peek<T>(arr: T[]) {
 }
 
 export class Formula {
+
+  public static execute(expression: string, tempVars: Dict<number> = Object.create(null), context = Context.default) {
+    const formula = new Formula(expression, context);
+    return formula.execute(tempVars);
+  }
   public readonly context: Context;
   private queue: Token[];
 
@@ -86,16 +91,11 @@ export class Formula {
     this.queue = queue;
   }
 
-  public static execute(expression: string, tempVars: Dict<number> = Object.create(null), context = Context.default) {
-    const formula = new Formula(expression, context);
-    return formula.execute(tempVars);
-  }
-
   public execute(tempVars: Dict<number> = Object.create(null)) {
     const vars: Dict<number> = Object.create(null);
     const stack: number[] = [];
 
-    for (const name in tempVars) {
+    for (const name of Object.keys(tempVars)) {
       vars[name.toLowerCase()] = tempVars[name];
     }
 
