@@ -1,0 +1,17 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+      "interface-name": false,
+      "arrow-parens": false,
+      "no-console": false,
+      "no-shadowed-variable": false,
+      "no-empty": [true, "allow-empty-functions"],
+      "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
+      "curly": [true, "ignore-same-line"]
+    },
+    "rulesDirectory": []
+}
