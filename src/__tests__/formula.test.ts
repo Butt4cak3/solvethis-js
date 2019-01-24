@@ -22,4 +22,5 @@ test("Expressions with parentheses", () => {
 test("Expressions without whitespace", () => {
   expect(Formula.execute("3+6")).toEqual(3 + 6);
   expect(Formula.execute("2+(3-1)")).toEqual(2 + (3 - 1));
+  expect(Formula.execute("3*45-5/4")).toEqual(133.75);
 });

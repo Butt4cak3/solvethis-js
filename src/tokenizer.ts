@@ -29,7 +29,6 @@ export interface Token {
 }
 
 export class Tokenizer {
-
   public static parse(str: string) {
     const tree = this.parser.getAST(str);
 
@@ -37,9 +36,11 @@ export class Tokenizer {
 
     const queue: Token[] = [];
     this.filter(tree, queue);
+    this.normalize(queue);
 
     return queue;
   }
+
   private static parser = new Grammars.W3C.Parser(grammar, null);
 
   private static filter(node: IToken, queue: Token[]) {
@@ -51,6 +52,21 @@ export class Tokenizer {
     } else {
       for (const child of node.children) {
         this.filter(child, queue);
+      }
+    }
+  }
+
+  private static normalize(tokens: Token[]) {
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (token.type === TokenType.NUMBER && token.text[0] === "-") {
+        if (i > 0 && tokens[i - 1].type === TokenType.NUMBER) {
+          tokens.splice(
+            i, 1,
+            { text: "-", type: TokenType.OPERATOR },
+            { text: token.text.substr(1), type: TokenType.NUMBER },
+          );
+        }
       }
     }
   }
