@@ -1,6 +1,6 @@
 {
   "name": "solvethis",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Parse and execute mathematical expressions",
   "author": "Marius Becker <marius.becker.8@gmail.com>",
   "license": "MIT",
