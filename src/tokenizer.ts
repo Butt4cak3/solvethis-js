@@ -20,7 +20,7 @@ export enum TokenType {
   OPERATOR = "Operator",
   PARAM_SEPARATOR = "ParamSeparator",
   PLEFT = "PLeft",
-  PRIGHT = "PRight"
+  PRIGHT = "PRight",
 }
 
 export interface Token {
@@ -47,7 +47,7 @@ export class Tokenizer {
     if ((Object.values(TokenType) as string[]).indexOf(node.type) !== -1) {
       queue.push({
         text: node.text,
-        type: node.type as TokenType
+        type: node.type as TokenType,
       });
     } else {
       for (const child of node.children) {
@@ -62,10 +62,9 @@ export class Tokenizer {
       if (token.type === TokenType.NUMBER && token.text[0] === "-") {
         if (i > 0 && tokens[i - 1].type === TokenType.NUMBER) {
           tokens.splice(
-            i,
-            1,
+            i, 1,
             { text: "-", type: TokenType.OPERATOR },
-            { text: token.text.substr(1), type: TokenType.NUMBER }
+            { text: token.text.substr(1), type: TokenType.NUMBER },
           );
         }
       }
